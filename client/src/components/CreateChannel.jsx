@@ -25,7 +25,31 @@ const ChannelNameInput = ({ channelName = "", setChannelName }) => {
 };
 
 const CreateChannel = ({ createType, setIsCreating }) => {
+  const { client, setActiveChannel } = useChatContext();
+  const [selectedUsers, setSelectedUsers] = useState([client.userID || ""]);
   const [channelName, setChannelName] = useState("");
+
+  const createchannel = async (e) => {
+    e.preventDefault();
+
+    try {
+      const newChannel = await client.channel(createType, channelName, {
+        name: channelName,
+        members: selectedUsers,
+      });
+
+      await newChannel.watch();
+
+      // reset the channel, when creating new
+      setChannelName("");
+      setIsCreating(false);
+      setSelectedUsers([client.userID]);
+      setActiveChannel(newChannel);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="create-channel__container">
       <div className="create-channel__header">
@@ -39,10 +63,15 @@ const CreateChannel = ({ createType, setIsCreating }) => {
       {createType === "team" && (
         <ChannelNameInput
           channelName={channelName}
-          setChannelNam={setChannelName}
+          setChannelName={setChannelName}
         />
       )}
-      <UserList />
+      <UserList setSelectedUsers={setSelectedUsers} />
+      <div className="create-channel__button-wrapper" onClick={createchannel}>
+        <p>
+          {createType === "team" ? "Create Channel" : "Create Meassage Group"}
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,40 +1,60 @@
-import React from 'react';
-import { Avatar, useChatContext } from 'stream-chat-react';
+import React from "react";
+import { Avatar, useChatContext } from "stream-chat-react";
 
+const TeamChannelPreview = ({
+  setActiveChannel,
+  setIsCreating,
+  setIsEditing,
+  setToggleContainer,
+  channel,
+  type,
+}) => {
+  const { channel: activeChannel, client } = useChatContext();
 
+  const ChannelPreview = () => (
+    <p className="channel-preview__item">
+      # {channel?.data?.name || channel?.data?.id}
+    </p>
+  );
 
-const TeamChannelPreview = ({ channel, type}) => {
-    const { channel: activeChannel, client} = useChatContext();
-
-    const ChannelPreview = () => (
-        <p className='channel-preview__item'>
-            # {channel?.data?.name || channel?.data?.id}
-        </p>
+  const DirectPreview = () => {
+    const members = Object.values(channel.state.members).filter(
+      ({ user }) => user.id !== client.userID
     );
 
-    const DirectPreview = () => {
-        //using object.value to get the object we get back into an array and then loop through it
-        const members = Object.values(channel.state.members).filters(({user}) => user.id !== client.userID);
-
-        return (
-            <div className='channel-preview__item single-line'>
-                <Avatar image={members[0]?.user?.image} name={members[0]?.user?.fullName} /> 
-                <p>{members[0]?.user?.fullName}</p>
-            </div> 
-        )
-    }
+    console.log(members[0]);
 
     return (
-        <div className={
-            channel?.id === activeChannel?.id 
-            ? 'channel-preview__wrapper__selected' : 'channel-preview__wrapper'
-        }
-        onclick= {() => {
-            console.log(channel);
-        }}>
-            {type === 'team' ? <ChannelPreview /> : <DirectPreview />}
-        </div>
-    )
-}
+      <div className="channel-preview__item single">
+        <Avatar
+          image={members[0]?.user?.image}
+          name={members[0]?.user?.fullName || members[0]?.user?.id}
+          size={24}
+        />
+        <p>{members[0]?.user?.fullName || members[0]?.user?.id}</p>
+      </div>
+    );
+  };
 
-export default TeamChannelPreview
+  return (
+    <div
+      className={
+        channel?.id === activeChannel?.id
+          ? "channel-preview__wrapper__selected"
+          : "channel-preview__wrapper"
+      }
+      onClick={() => {
+        setIsCreating(false);
+        setIsEditing(false);
+        setActiveChannel(channel);
+        if (setToggleContainer) {
+          setToggleContainer((prevState) => !prevState);
+        }
+      }}
+    >
+      {type === "team" ? <ChannelPreview /> : <DirectPreview />}
+    </div>
+  );
+};
+
+export default TeamChannelPreview;
